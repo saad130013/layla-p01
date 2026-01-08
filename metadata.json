@@ -1,0 +1,5 @@
+{
+  "name": "AuditPro A4 - Advanced Report Generator",
+  "description": "A professional administrative report generator specializing in A4 inspection reports with PDF and DOCX support, multi-style templates, and automatic area-type detection.",
+  "requestFramePermissions": []
+}
