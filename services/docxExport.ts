@@ -11,8 +11,7 @@ import {
   AlignmentType, 
   Header,
   BorderStyle,
-  VerticalAlign,
-  TableDirection
+  VerticalAlign
 } from 'docx';
 import { InspectionData, InspectionItem, StyleVariant } from '../types';
 
@@ -151,7 +150,14 @@ export async function generateDocx(data: InspectionData, variant: StyleVariant) 
         // جدول معلومات الزيارة
         new Table({
           width: { size: FULL_WIDTH, type: WidthType.PERCENTAGE },
-          borders: { all: { style: BorderStyle.SINGLE, size: 4, color: theme.border } },
+          borders: { 
+            top: { style: BorderStyle.SINGLE, size: 4, color: theme.border },
+            bottom: { style: BorderStyle.SINGLE, size: 4, color: theme.border },
+            left: { style: BorderStyle.SINGLE, size: 4, color: theme.border },
+            right: { style: BorderStyle.SINGLE, size: 4, color: theme.border },
+            insideHorizontal: { style: BorderStyle.SINGLE, size: 4, color: theme.border },
+            insideVertical: { style: BorderStyle.SINGLE, size: 4, color: theme.border },
+          },
           rows: [
             new TableRow({
               children: [
