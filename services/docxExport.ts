@@ -13,8 +13,6 @@ import {
   Footer,
   BorderStyle,
   VerticalAlign,
-  PageOrientation,
-  HeightRule
 } from 'docx';
 import { InspectionData, InspectionItem, StyleVariant } from '../types';
 
@@ -53,7 +51,7 @@ export async function generateDocx(data: InspectionData, variant: StyleVariant) 
             new TextRun({ 
               text: `${item.no}- ${item.title.toUpperCase()}`, 
               bold: true, 
-              size: 14, 
+              size: 13, 
               color: theme.primary,
               font: "Calibri"
             })
@@ -65,28 +63,28 @@ export async function generateDocx(data: InspectionData, variant: StyleVariant) 
         new Paragraph({
           alignment: AlignmentType.BOTH,
           children: [
-            new TextRun({ text: `MAX: ${item.maxScore} | EXC: ${item.maxScore}`, size: 11, color: "64748B" }),
-            ...(item.lowScoreMarker ? [new TextRun({ text: `  LOW: ${item.lowScoreMarker}`, size: 11, color: "DC2626" })] : [])
+            new TextRun({ text: `MAX: ${item.maxScore} | EXC: ${item.maxScore}`, size: 10, color: "64748B" }),
+            ...(item.lowScoreMarker ? [new TextRun({ text: `  LOW: ${item.lowScoreMarker}`, size: 10, color: "DC2626" })] : [])
           ],
           spacing: { after: 60 }
         }),
         // Observations
         ...item.observations.map(obs => new Paragraph({
-          spacing: { before: 20 },
+          spacing: { before: 15 },
           children: [
-            new TextRun({ text: obs.checked ? " ☒ " : " ☐ ", size: 16, font: "Segoe UI Symbol" }),
-            new TextRun({ text: ` ${obs.label}`, size: 12, color: "334155" })
+            new TextRun({ text: obs.checked ? " ☒ " : " ☐ ", size: 14, font: "Segoe UI Symbol" }),
+            new TextRun({ text: ` ${obs.label}`, size: 11, color: "334155" })
           ]
         })),
         // Score Box
         new Paragraph({
           alignment: AlignmentType.RIGHT,
-          spacing: { before: 100 },
+          spacing: { before: 80 },
           children: [
-            new TextRun({ text: "SCORE: ", size: 11, bold: true, color: "94A3B8" }),
+            new TextRun({ text: "SCORE: ", size: 10, bold: true, color: "94A3B8" }),
             new TextRun({ 
               text: ` ${item.givenScore} `, 
-              size: 16, 
+              size: 14, 
               bold: true, 
               color: "FFFFFF", 
               shading: { fill: theme.primary } 
@@ -94,7 +92,7 @@ export async function generateDocx(data: InspectionData, variant: StyleVariant) 
           ]
         })
       ],
-      margins: { top: 100, bottom: 100, left: 100, right: 100 },
+      margins: { top: 80, bottom: 80, left: 80, right: 80 },
     });
   };
 
@@ -130,9 +128,9 @@ export async function generateDocx(data: InspectionData, variant: StyleVariant) 
                     new TableCell({
                       width: { size: 30, type: WidthType.PERCENTAGE },
                       children: [
-                        new Paragraph({ children: [new TextRun({ text: "KINGDOM OF SAUDI ARABIA", bold: true, size: 14, color: theme.primary })] }),
-                        new Paragraph({ children: [new TextRun({ text: "SAUDI NATIONAL GUARD HEALTH AFFAIRS", bold: true, size: 12, color: theme.primary })] }),
-                        new Paragraph({ children: [new TextRun({ text: "SUPPORT SERVICES - ENVIRONMENTAL", size: 11, color: theme.primary, opacity: 70 })] }),
+                        new Paragraph({ children: [new TextRun({ text: "KINGDOM OF SAUDI ARABIA", bold: true, size: 13, color: theme.primary })] }),
+                        new Paragraph({ children: [new TextRun({ text: "SAUDI NATIONAL GUARD HEALTH AFFAIRS", bold: true, size: 11, color: theme.primary })] }),
+                        new Paragraph({ children: [new TextRun({ text: "SUPPORT SERVICES - ENVIRONMENTAL", size: 10, color: theme.primary })] }),
                       ]
                     }),
                     new TableCell({
@@ -142,20 +140,20 @@ export async function generateDocx(data: InspectionData, variant: StyleVariant) 
                         new Paragraph({
                           alignment: AlignmentType.CENTER,
                           shading: { fill: theme.primary },
-                          children: [new TextRun({ text: "AUDIT & INSPECTION REPORT", bold: true, size: 22, color: "FFFFFF" })]
+                          children: [new TextRun({ text: "AUDIT & INSPECTION REPORT", bold: true, size: 20, color: "FFFFFF" })]
                         }),
                         new Paragraph({
                           alignment: AlignmentType.CENTER,
-                          children: [new TextRun({ text: `(${data.areaType.toUpperCase()})`, bold: true, size: 14, color: theme.primary })]
+                          children: [new TextRun({ text: `(${data.areaType.toUpperCase()})`, bold: true, size: 12, color: theme.primary })]
                         })
                       ]
                     }),
                     new TableCell({
                       width: { size: 30, type: WidthType.PERCENTAGE },
                       children: [
-                        new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: `Form # ${data.formNumber}`, bold: true, size: 14, color: theme.primary })] }),
-                        new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: "QUALITY CONTROL DEPT.", bold: true, size: 12, color: theme.primary })] }),
-                        new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: "CONFIDENTIAL DOCUMENT", size: 11, color: theme.primary, opacity: 70 })] }),
+                        new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: `Form # ${data.formNumber}`, bold: true, size: 13, color: theme.primary })] }),
+                        new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: "QUALITY CONTROL DEPT.", bold: true, size: 11, color: theme.primary })] }),
+                        new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: "CONFIDENTIAL DOCUMENT", size: 10, color: theme.primary })] }),
                       ]
                     }),
                   ]
@@ -171,7 +169,7 @@ export async function generateDocx(data: InspectionData, variant: StyleVariant) 
             new Paragraph({
               alignment: AlignmentType.LEFT,
               children: [
-                new TextRun({ text: `Form Ref: ${data.id} | Generated via AuditPro`, size: 10, color: "94A3B8" })
+                new TextRun({ text: `Form Ref: ${data.id} | Generated via AuditPro`, size: 9, color: "94A3B8" })
               ]
             })
           ]
@@ -179,7 +177,7 @@ export async function generateDocx(data: InspectionData, variant: StyleVariant) 
       },
       children: [
         // Spacer
-        new Paragraph({ spacing: { after: 120 } }),
+        new Paragraph({ spacing: { after: 100 } }),
         
         // Info Bar
         new Table({
@@ -187,16 +185,16 @@ export async function generateDocx(data: InspectionData, variant: StyleVariant) 
           rows: [
             new TableRow({
               children: [
-                new TableCell({ borders: { top: standardBorder, bottom: standardBorder, left: standardBorder, right: standardBorder }, children: [new Paragraph({ children: [new TextRun({ text: "AREA / LOCATION", bold: true, size: 11, color: "64748B" }), new TextRun({ text: `\n${data.areaRoom}`, bold: true, size: 14, color: "334155" })] })] }),
-                new TableCell({ borders: { top: standardBorder, bottom: standardBorder, left: standardBorder, right: standardBorder }, children: [new Paragraph({ children: [new TextRun({ text: "DATE", bold: true, size: 11, color: "64748B" }), new TextRun({ text: `\n${data.date}`, bold: true, size: 14, color: "1E293B" })] })] }),
-                new TableCell({ borders: { top: standardBorder, bottom: standardBorder, left: standardBorder, right: standardBorder }, children: [new Paragraph({ children: [new TextRun({ text: "SUPERVISOR", bold: true, size: 11, color: "64748B" }), new TextRun({ text: "\n---", bold: true, size: 14, color: "94A3B8" })] })] }),
-                new TableCell({ borders: { top: standardBorder, bottom: standardBorder, left: standardBorder, right: standardBorder }, children: [new Paragraph({ children: [new TextRun({ text: "AUDITOR", bold: true, size: 11, color: "64748B" }), new TextRun({ text: "\n---", bold: true, size: 14, color: "94A3B8" })] })] }),
+                new TableCell({ borders: { top: standardBorder, bottom: standardBorder, left: standardBorder, right: standardBorder }, children: [new Paragraph({ children: [new TextRun({ text: "AREA / LOCATION", bold: true, size: 10, color: "64748B" }), new TextRun({ text: `\n${data.areaRoom}`, bold: true, size: 12, color: "334155" })] })] }),
+                new TableCell({ borders: { top: standardBorder, bottom: standardBorder, left: standardBorder, right: standardBorder }, children: [new Paragraph({ children: [new TextRun({ text: "DATE", bold: true, size: 10, color: "64748B" }), new TextRun({ text: `\n${data.date}`, bold: true, size: 12, color: "1E293B" })] })] }),
+                new TableCell({ borders: { top: standardBorder, bottom: standardBorder, left: standardBorder, right: standardBorder }, children: [new Paragraph({ children: [new TextRun({ text: "SUPERVISOR", bold: true, size: 10, color: "64748B" }), new TextRun({ text: "\n---", bold: true, size: 12, color: "94A3B8" })] })] }),
+                new TableCell({ borders: { top: standardBorder, bottom: standardBorder, left: standardBorder, right: standardBorder }, children: [new Paragraph({ children: [new TextRun({ text: "AUDITOR", bold: true, size: 10, color: "64748B" }), new TextRun({ text: "\n---", bold: true, size: 12, color: "94A3B8" })] })] }),
               ]
             })
           ]
         }),
 
-        new Paragraph({ spacing: { after: 120 } }),
+        new Paragraph({ spacing: { after: 100 } }),
 
         // Main Items Grid
         new Table({
@@ -204,7 +202,7 @@ export async function generateDocx(data: InspectionData, variant: StyleVariant) 
           rows: itemRows
         }),
 
-        new Paragraph({ spacing: { after: 120 } }),
+        new Paragraph({ spacing: { after: 100 } }),
 
         // Comments & Tools
         new Table({
@@ -216,21 +214,21 @@ export async function generateDocx(data: InspectionData, variant: StyleVariant) 
                   width: { size: 33.3, type: WidthType.PERCENTAGE },
                   borders: { top: standardBorder, bottom: standardBorder, left: standardBorder, right: standardBorder },
                   children: [
-                    new Paragraph({ children: [new TextRun({ text: "COMMENTS", bold: true, size: 14, color: theme.primary })], border: { bottom: standardBorder } }),
-                    new Paragraph({ children: [new TextRun({ text: data.comments, italic: true, size: 12, color: "64748B" })], spacing: { before: 100 } })
+                    new Paragraph({ children: [new TextRun({ text: "COMMENTS", bold: true, size: 13, color: theme.primary })], border: { bottom: standardBorder } }),
+                    new Paragraph({ children: [new TextRun({ text: data.comments, italics: true, size: 11, color: "64748B" })], spacing: { before: 80 } })
                   ],
-                  margins: { top: 100, bottom: 100, left: 100, right: 100 }
+                  margins: { top: 80, bottom: 80, left: 80, right: 80 }
                 }),
                 new TableCell({
                   width: { size: 33.3, type: WidthType.PERCENTAGE },
                   borders: { top: standardBorder, bottom: standardBorder, left: standardBorder, right: standardBorder },
                   children: [
-                    new Paragraph({ children: [new TextRun({ text: "MISSING TOOLS", bold: true, size: 14, color: theme.primary })], border: { bottom: standardBorder } }),
-                    new Paragraph({ children: [new TextRun({ text: "1. ............................................", size: 11, color: "CBD5E1" })], spacing: { before: 40 } }),
-                    new Paragraph({ children: [new TextRun({ text: "2. ............................................", size: 11, color: "CBD5E1" })] }),
-                    new Paragraph({ children: [new TextRun({ text: "3. ............................................", size: 11, color: "CBD5E1" })] }),
+                    new Paragraph({ children: [new TextRun({ text: "MISSING TOOLS", bold: true, size: 13, color: theme.primary })], border: { bottom: standardBorder } }),
+                    new Paragraph({ children: [new TextRun({ text: "1. ............................................", size: 10, color: "CBD5E1" })], spacing: { before: 40 } }),
+                    new Paragraph({ children: [new TextRun({ text: "2. ............................................", size: 10, color: "CBD5E1" })] }),
+                    new Paragraph({ children: [new TextRun({ text: "3. ............................................", size: 10, color: "CBD5E1" })] }),
                   ],
-                  margins: { top: 100, bottom: 100, left: 100, right: 100 }
+                  margins: { top: 80, bottom: 80, left: 80, right: 80 }
                 }),
                 new TableCell({
                   width: { size: 33.3, type: WidthType.PERCENTAGE },
@@ -238,18 +236,18 @@ export async function generateDocx(data: InspectionData, variant: StyleVariant) 
                   shading: { fill: "f8fafc" },
                   verticalAlign: VerticalAlign.BOTTOM,
                   children: [
-                    new Paragraph({ children: [new TextRun({ text: "AVAIL: ☐    N/A: ☐", bold: true, size: 12 })], spacing: { after: 200 } }),
+                    new Paragraph({ children: [new TextRun({ text: "AVAIL: ☐    N/A: ☐", bold: true, size: 11 })], spacing: { after: 150 } }),
                     new Paragraph({ border: { bottom: { style: BorderStyle.DASHED, size: 1, color: "94A3B8" } } }),
-                    new Paragraph({ children: [new TextRun({ text: "Supervisor Signature", size: 10, color: "94A3B8" })] }),
+                    new Paragraph({ children: [new TextRun({ text: "Supervisor Signature", size: 9, color: "94A3B8" })] }),
                   ],
-                  margins: { top: 100, bottom: 100, left: 100, right: 100 }
+                  margins: { top: 80, bottom: 80, left: 80, right: 80 }
                 })
               ]
             })
           ]
         }),
 
-        new Paragraph({ spacing: { after: 120 } }),
+        new Paragraph({ spacing: { after: 100 } }),
 
         // Summary Table (Arabic Support)
         new Table({
@@ -263,7 +261,7 @@ export async function generateDocx(data: InspectionData, variant: StyleVariant) 
                 new TableCell({
                   width: { size: 5, type: WidthType.PERCENTAGE },
                   borders: { right: lightBorder },
-                  children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: item ? (startIdx + idx + 1).toString() : "", size: 10, color: "94A3B8" })] })]
+                  children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: item ? (startIdx + idx + 1).toString() : "", size: 9, color: "94A3B8" })] })]
                 }),
                 new TableCell({
                   width: { size: 23, type: WidthType.PERCENTAGE },
@@ -272,7 +270,7 @@ export async function generateDocx(data: InspectionData, variant: StyleVariant) 
                     new Paragraph({ 
                       alignment: AlignmentType.RIGHT, 
                       bidirectional: true,
-                      children: [new TextRun({ text: item?.titleArabic || "", bold: true, size: 11, font: "Arial Unicode MS" })] 
+                      children: [new TextRun({ text: item?.titleArabic || "", bold: true, size: 10, font: "Arial" })] 
                     })
                   ]
                 }),
@@ -280,14 +278,14 @@ export async function generateDocx(data: InspectionData, variant: StyleVariant) 
                   width: { size: 5, type: WidthType.PERCENTAGE },
                   shading: { fill: "f8fafc" },
                   borders: { right: idx < 2 ? standardBorder : { style: BorderStyle.NONE } },
-                  children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: item ? `${item.givenScore}/${item.maxScore}` : "", size: 11, bold: true })] })]
+                  children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: item ? `${item.givenScore}/${item.maxScore}` : "", size: 10, bold: true })] })]
                 })
               ])
             });
           })
         }),
 
-        new Paragraph({ spacing: { after: 240 } }),
+        new Paragraph({ spacing: { after: 200 } }),
 
         // Signatures Bar
         new Table({
@@ -300,7 +298,7 @@ export async function generateDocx(data: InspectionData, variant: StyleVariant) 
                   width: { size: 30, type: WidthType.PERCENTAGE },
                   children: [
                     new Paragraph({ spacing: { before: 200 }, border: { bottom: standardBorder } }),
-                    new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "AUDITOR SIGNATURE", bold: true, size: 12, color: theme.primary })] })
+                    new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "AUDITOR SIGNATURE", bold: true, size: 11, color: theme.primary })] })
                   ]
                 }),
                 new TableCell({
@@ -309,7 +307,7 @@ export async function generateDocx(data: InspectionData, variant: StyleVariant) 
                   children: [
                     new Paragraph({ 
                       alignment: AlignmentType.CENTER, 
-                      children: [new TextRun({ text: "Quality Compliance Score: ________ %", bold: true, size: 18, italic: true, color: theme.primary })] 
+                      children: [new TextRun({ text: "Quality Compliance Score: ________ %", bold: true, size: 16, italics: true, color: theme.primary })] 
                     })
                   ]
                 }),
@@ -317,7 +315,7 @@ export async function generateDocx(data: InspectionData, variant: StyleVariant) 
                   width: { size: 30, type: WidthType.PERCENTAGE },
                   children: [
                     new Paragraph({ spacing: { before: 200 }, border: { bottom: standardBorder } }),
-                    new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "OFFICIAL APPROVAL", bold: true, size: 12, color: theme.primary })] })
+                    new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "OFFICIAL APPROVAL", bold: true, size: 11, color: theme.primary })] })
                   ]
                 })
               ]
