@@ -1,5 +1,5 @@
 
-export type AreaType = 'Public' | 'High Risk' | 'Mid Risk';
+export type AreaType = 'Public Area' | 'High Risk Area' | 'Mid Risk Area';
 
 export interface ObservationOption {
   label: string;
@@ -11,6 +11,7 @@ export interface InspectionItem {
   title: string;
   titleArabic?: string;
   maxScore: number;
+  lowScoreMarker?: number;
   givenScore: number;
   observations: ObservationOption[];
   inspectorComment?: string;
@@ -18,22 +19,22 @@ export interface InspectionItem {
 
 export interface InspectionData {
   id: string;
+  formNumber: string;
   date: string;
   time: string;
   areaRoom: string;
   areaType: AreaType;
   inspectorName: string;
-  inspectorSignature?: string;
-  supervisorReviewer: string;
-  approver: string;
+  supervisorName: string;
   items: InspectionItem[];
-  unavailableTools: string[];
-  isSupervisorAvailable: boolean;
+  comments: string;
+  missingTools: string[];
+  isToolAvailable: boolean;
   totalScore: number;
   maxTotalScore: number;
 }
 
-export type StyleVariant = 'Classic' | 'Modern' | 'Audit' | 'Emerald' | 'Minimal';
+export type StyleVariant = 'Classic' | 'Executive' | 'Slate' | 'Sand' | 'Minimal';
 
 export interface AppSettings {
   style: StyleVariant;

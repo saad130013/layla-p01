@@ -10,215 +10,320 @@ import {
   WidthType, 
   AlignmentType, 
   Header,
+  Footer,
   BorderStyle,
-  VerticalAlign
+  VerticalAlign,
+  PageOrientation,
+  HeightRule
 } from 'docx';
 import { InspectionData, InspectionItem, StyleVariant } from '../types';
 
 export async function generateDocx(data: InspectionData, variant: StyleVariant) {
-  // تعريف ألوان الثيمات بناءً على الاختيار
-  const getThemeColors = (v: StyleVariant) => {
-    switch (v) {
-      case 'Modern': return { accent: "2563EB", bg: "EFF6FF", border: "94A3B8" };
-      case 'Audit': return { accent: "E11D48", bg: "FFF1F2", border: "FB7185" };
-      case 'Emerald': return { accent: "059669", bg: "ECFDF5", border: "6EE7B7" };
-      case 'Minimal': return { accent: "0F172A", bg: "F8FAFC", border: "E2E8F0" };
-      default: return { accent: "1E293B", bg: "F1F5F9", border: "000000" };
-    }
+  const themes = {
+    Classic: { primary: "1a4a44", border: "1a4a44", bg: "f0fdfa" },
+    Executive: { primary: "1e3a8a", border: "1e3a8a", bg: "eff6ff" },
+    Slate: { primary: "334155", border: "334155", bg: "f8fafc" },
+    Sand: { primary: "78350f", border: "78350f", bg: "fffbeb" },
+    Minimal: { primary: "000000", border: "000000", bg: "ffffff" }
   };
 
-  const theme = getThemeColors(variant);
-  const FULL_WIDTH = 100;
-  const THIRD_WIDTH = 33.3;
+  const theme = themes[variant] || themes.Classic;
+  const standardBorder = { style: BorderStyle.SINGLE, size: 1, color: theme.border };
+  const lightBorder = { style: BorderStyle.SINGLE, size: 1, color: "E2E8F0" };
 
-  // دالة لإنشاء خلية لكل بند تفتيش
+  // Helper to create a cell for the main inspection grid
   const createItemCell = (item: InspectionItem | undefined) => {
     if (!item) {
       return new TableCell({ 
         children: [], 
-        borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } } 
+        borders: { top: standardBorder, bottom: standardBorder, left: standardBorder, right: standardBorder } 
       });
     }
 
     return new TableCell({
-      width: { size: THIRD_WIDTH, type: WidthType.PERCENTAGE },
-      shading: { fill: "FFFFFF" },
-      borders: {
-        top: { style: BorderStyle.SINGLE, size: 4, color: theme.border },
-        bottom: { style: BorderStyle.SINGLE, size: 4, color: theme.border },
-        left: { style: BorderStyle.SINGLE, size: 4, color: theme.border },
-        right: { style: BorderStyle.SINGLE, size: 4, color: theme.border },
-      },
+      width: { size: 33.3, type: WidthType.PERCENTAGE },
+      verticalAlign: VerticalAlign.TOP,
+      borders: { top: standardBorder, bottom: standardBorder, left: standardBorder, right: standardBorder },
       children: [
-        // عنوان البند مع خلفية ملونة
+        // Title
         new Paragraph({
-          alignment: AlignmentType.CENTER,
-          shading: { fill: theme.bg },
+          alignment: AlignmentType.LEFT,
+          shading: { fill: "fcfcfc" },
           children: [
             new TextRun({ 
               text: `${item.no}- ${item.title.toUpperCase()}`, 
               bold: true, 
-              size: 15,
-              color: theme.accent
+              size: 14, 
+              color: theme.primary,
+              font: "Calibri"
             })
           ],
+          border: { bottom: { style: BorderStyle.SINGLE, size: 1, color: theme.primary + "20" } },
+          spacing: { after: 40 }
         }),
-        // الدرجات المتاحة (M, E, G, L, B)
+        // Score Info
         new Paragraph({
-          spacing: { before: 40, after: 40 },
-          alignment: AlignmentType.CENTER,
+          alignment: AlignmentType.BOTH,
           children: [
-            new TextRun({ 
-              text: `M:${item.maxScore} E:${item.maxScore} G:${Math.floor(item.maxScore * 0.7)} L:${Math.floor(item.maxScore * 0.4)} B:0`, 
-              size: 12, 
-              color: "64748B",
-              font: "Courier New"
-            })
+            new TextRun({ text: `MAX: ${item.maxScore} | EXC: ${item.maxScore}`, size: 11, color: "64748B" }),
+            ...(item.lowScoreMarker ? [new TextRun({ text: `  LOW: ${item.lowScoreMarker}`, size: 11, color: "DC2626" })] : [])
           ],
+          spacing: { after: 60 }
         }),
-        // الملاحظات (Observations)
+        // Observations
         ...item.observations.map(obs => new Paragraph({
           spacing: { before: 20 },
           children: [
-            new TextRun({ text: obs.checked ? " [✓] " : " [  ] ", bold: obs.checked, size: 13 }),
-            new TextRun({ text: obs.label, size: 13, color: "334155" })
+            new TextRun({ text: obs.checked ? " ☒ " : " ☐ ", size: 16, font: "Segoe UI Symbol" }),
+            new TextRun({ text: ` ${obs.label}`, size: 12, color: "334155" })
           ]
         })),
-        // خانة الدرجة الفارغة
+        // Score Box
         new Paragraph({
-          spacing: { before: 120 },
+          alignment: AlignmentType.RIGHT,
+          spacing: { before: 100 },
           children: [
-            new TextRun({ text: "SCORE: ", bold: true, size: 14, color: theme.accent }),
-            new TextRun({ text: "__________", color: "CBD5E1" })
+            new TextRun({ text: "SCORE: ", size: 11, bold: true, color: "94A3B8" }),
+            new TextRun({ 
+              text: ` ${item.givenScore} `, 
+              size: 16, 
+              bold: true, 
+              color: "FFFFFF", 
+              shading: { fill: theme.primary } 
+            })
           ]
         })
       ],
-      margins: { top: 80, bottom: 80, left: 80, right: 80 },
+      margins: { top: 100, bottom: 100, left: 100, right: 100 },
     });
   };
 
-  // إنشاء الهيدر (رأس الصفحة)
-  const header = new Header({
-    children: [
-      new Table({
-        width: { size: FULL_WIDTH, type: WidthType.PERCENTAGE },
-        borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.SINGLE, size: 12, color: theme.accent }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } },
-        rows: [
-          new TableRow({
-            children: [
-              new TableCell({
-                width: { size: 33, type: WidthType.PERCENTAGE },
-                children: [
-                  new Paragraph({ children: [new TextRun({ text: "Support Services Division", bold: true, size: 18 })] }),
-                  new Paragraph({ children: [new TextRun({ text: "Environmental Services Dept.", size: 16, color: "64748B" })] }),
-                ],
-              }),
-              new TableCell({
-                width: { size: 34, type: WidthType.PERCENTAGE },
-                verticalAlign: VerticalAlign.CENTER,
-                children: [
-                  new Paragraph({ 
-                    alignment: AlignmentType.CENTER, 
-                    children: [new TextRun({ text: "INSPECTION AUDIT REPORT", bold: true, size: 22, color: theme.accent })] 
-                  }),
-                  new Paragraph({ 
-                    alignment: AlignmentType.CENTER, 
-                    children: [new TextRun({ text: `(${data.areaType} Area)`, size: 14, color: "94A3B8" })] 
-                  }),
-                ],
-              }),
-              new TableCell({
-                width: { size: 33, type: WidthType.PERCENTAGE },
-                children: [
-                  new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: "المملكة العربية السعودية", bold: true, size: 16 })] }),
-                  new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: "الشؤون الصحية بالحرس الوطني", size: 14 })] }),
-                ],
-              }),
-            ],
-          }),
-        ],
-      }),
-    ],
-  });
+  // Build the items table rows
+  const itemRows: TableRow[] = [];
+  for (let i = 0; i < data.items.length; i += 3) {
+    itemRows.push(new TableRow({
+      children: [
+        createItemCell(data.items[i]),
+        createItemCell(data.items[i + 1]),
+        createItemCell(data.items[i + 2])
+      ]
+    }));
+  }
 
-  // بناء محتوى المستند
   const doc = new Document({
     sections: [{
-      headers: { default: header },
-      properties: { page: { margin: { top: 720, right: 720, bottom: 720, left: 720 } } },
+      properties: {
+        page: {
+          margin: { top: 567, right: 567, bottom: 567, left: 567 }, // Approx 1cm margins
+          size: { width: 11906, height: 16838 } // A4
+        }
+      },
+      headers: {
+        default: new Header({
+          children: [
+            new Table({
+              width: { size: 100, type: WidthType.PERCENTAGE },
+              borders: { bottom: { style: BorderStyle.SINGLE, size: 6, color: theme.primary }, top: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } },
+              rows: [
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      width: { size: 30, type: WidthType.PERCENTAGE },
+                      children: [
+                        new Paragraph({ children: [new TextRun({ text: "KINGDOM OF SAUDI ARABIA", bold: true, size: 14, color: theme.primary })] }),
+                        new Paragraph({ children: [new TextRun({ text: "SAUDI NATIONAL GUARD HEALTH AFFAIRS", bold: true, size: 12, color: theme.primary })] }),
+                        new Paragraph({ children: [new TextRun({ text: "SUPPORT SERVICES - ENVIRONMENTAL", size: 11, color: theme.primary, opacity: 70 })] }),
+                      ]
+                    }),
+                    new TableCell({
+                      width: { size: 40, type: WidthType.PERCENTAGE },
+                      verticalAlign: VerticalAlign.CENTER,
+                      children: [
+                        new Paragraph({
+                          alignment: AlignmentType.CENTER,
+                          shading: { fill: theme.primary },
+                          children: [new TextRun({ text: "AUDIT & INSPECTION REPORT", bold: true, size: 22, color: "FFFFFF" })]
+                        }),
+                        new Paragraph({
+                          alignment: AlignmentType.CENTER,
+                          children: [new TextRun({ text: `(${data.areaType.toUpperCase()})`, bold: true, size: 14, color: theme.primary })]
+                        })
+                      ]
+                    }),
+                    new TableCell({
+                      width: { size: 30, type: WidthType.PERCENTAGE },
+                      children: [
+                        new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: `Form # ${data.formNumber}`, bold: true, size: 14, color: theme.primary })] }),
+                        new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: "QUALITY CONTROL DEPT.", bold: true, size: 12, color: theme.primary })] }),
+                        new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: "CONFIDENTIAL DOCUMENT", size: 11, color: theme.primary, opacity: 70 })] }),
+                      ]
+                    }),
+                  ]
+                })
+              ]
+            })
+          ]
+        })
+      },
+      footers: {
+        default: new Footer({
+          children: [
+            new Paragraph({
+              alignment: AlignmentType.LEFT,
+              children: [
+                new TextRun({ text: `Form Ref: ${data.id} | Generated via AuditPro`, size: 10, color: "94A3B8" })
+              ]
+            })
+          ]
+        })
+      },
       children: [
-        // جدول معلومات الزيارة
+        // Spacer
+        new Paragraph({ spacing: { after: 120 } }),
+        
+        // Info Bar
         new Table({
-          width: { size: FULL_WIDTH, type: WidthType.PERCENTAGE },
-          borders: { 
-            top: { style: BorderStyle.SINGLE, size: 4, color: theme.border },
-            bottom: { style: BorderStyle.SINGLE, size: 4, color: theme.border },
-            left: { style: BorderStyle.SINGLE, size: 4, color: theme.border },
-            right: { style: BorderStyle.SINGLE, size: 4, color: theme.border },
-            insideHorizontal: { style: BorderStyle.SINGLE, size: 4, color: theme.border },
-            insideVertical: { style: BorderStyle.SINGLE, size: 4, color: theme.border },
-          },
+          width: { size: 100, type: WidthType.PERCENTAGE },
           rows: [
             new TableRow({
               children: [
-                new TableCell({ children: [new Paragraph({ spacing: {before:100, after:100}, children: [new TextRun({ text: " DATE: ", bold: true }), new TextRun(data.date)] })] }),
-                new TableCell({ children: [new Paragraph({ spacing: {before:100, after:100}, children: [new TextRun({ text: " TIME: ", bold: true }), new TextRun(data.time)] })] }),
-                new TableCell({ shading: { fill: theme.bg }, children: [new Paragraph({ spacing: {before:100, after:100}, children: [new TextRun({ text: " AREA: ", bold: true, color: theme.accent }), new TextRun({ text: data.areaRoom, bold: true })] })] }),
-              ],
-            }),
-          ],
-        }),
-
-        new Paragraph({ text: "", spacing: { before: 150 } }),
-
-        // شبكة بنود التفتيش (3 أعمدة)
-        new Table({
-          width: { size: FULL_WIDTH, type: WidthType.PERCENTAGE },
-          rows: [
-            new TableRow({ children: [createItemCell(data.items[0]), createItemCell(data.items[1]), createItemCell(data.items[2])] }),
-            new TableRow({ children: [createItemCell(data.items[3]), createItemCell(data.items[4]), createItemCell(data.items[5])] }),
-            new TableRow({ children: [createItemCell(data.items[6]), createItemCell(data.items[7]), createItemCell(data.items[8])] }),
-            new TableRow({ children: [createItemCell(data.items[9]), createItemCell(data.items[10]), createItemCell(data.items[11])] }),
-            new TableRow({ children: [createItemCell(data.items[12]), createItemCell(data.items[13]), createItemCell(data.items[14])] }),
-            new TableRow({ children: [createItemCell(data.items[15]), createItemCell(undefined), createItemCell(undefined)] }),
-          ],
-        }),
-
-        new Paragraph({ text: "", spacing: { before: 150 } }),
-
-        // جدول الملخص ثنائي اللغة (مطابق تماماً للتصميم)
-        new Table({
-          width: { size: FULL_WIDTH, type: WidthType.PERCENTAGE },
-          rows: [
-            new TableRow({
-              tableHeader: true,
-              children: [
-                new TableCell({ shading: { fill: theme.accent }, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "الدرجة", bold: true, color: "FFFFFF" })] })] }),
-                new TableCell({ shading: { fill: theme.accent }, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "#", bold: true, color: "FFFFFF" })] })] }),
-                new TableCell({ shading: { fill: theme.accent }, children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: "بند الفحص الإداري", bold: true, color: "FFFFFF" })] })] }),
-                new TableCell({ shading: { fill: theme.accent }, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "الدرجة", bold: true, color: "FFFFFF" })] })] }),
-                new TableCell({ shading: { fill: theme.accent }, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "#", bold: true, color: "FFFFFF" })] })] }),
-                new TableCell({ shading: { fill: theme.accent }, children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: "بند الفحص الإداري", bold: true, color: "FFFFFF" })] })] }),
+                new TableCell({ borders: { top: standardBorder, bottom: standardBorder, left: standardBorder, right: standardBorder }, children: [new Paragraph({ children: [new TextRun({ text: "AREA / LOCATION", bold: true, size: 11, color: "64748B" }), new TextRun({ text: `\n${data.areaRoom}`, bold: true, size: 14, color: "334155" })] })] }),
+                new TableCell({ borders: { top: standardBorder, bottom: standardBorder, left: standardBorder, right: standardBorder }, children: [new Paragraph({ children: [new TextRun({ text: "DATE", bold: true, size: 11, color: "64748B" }), new TextRun({ text: `\n${data.date}`, bold: true, size: 14, color: "1E293B" })] })] }),
+                new TableCell({ borders: { top: standardBorder, bottom: standardBorder, left: standardBorder, right: standardBorder }, children: [new Paragraph({ children: [new TextRun({ text: "SUPERVISOR", bold: true, size: 11, color: "64748B" }), new TextRun({ text: "\n---", bold: true, size: 14, color: "94A3B8" })] })] }),
+                new TableCell({ borders: { top: standardBorder, bottom: standardBorder, left: standardBorder, right: standardBorder }, children: [new Paragraph({ children: [new TextRun({ text: "AUDITOR", bold: true, size: 11, color: "64748B" }), new TextRun({ text: "\n---", bold: true, size: 14, color: "94A3B8" })] })] }),
               ]
-            }),
-            ...[0,1,2,3,4,5,6,7].map(i => new TableRow({
-              children: [
-                new TableCell({ children: [new Paragraph({ alignment: AlignmentType.CENTER, text: ` / (${data.items[i+8]?.maxScore})` })] }),
-                new TableCell({ children: [new Paragraph({ alignment: AlignmentType.CENTER, text: (i+9).toString() })] }),
-                new TableCell({ children: [new Paragraph({ alignment: AlignmentType.RIGHT, text: data.items[i+8]?.titleArabic || "" })] }),
-                new TableCell({ children: [new Paragraph({ alignment: AlignmentType.CENTER, text: ` / (${data.items[i]?.maxScore})` })] }),
-                new TableCell({ children: [new Paragraph({ alignment: AlignmentType.CENTER, text: (i+1).toString() })] }),
-                new TableCell({ children: [new Paragraph({ alignment: AlignmentType.RIGHT, text: data.items[i]?.titleArabic || "" })] }),
-              ]
-            }))
+            })
           ]
         }),
 
-        new Paragraph({ 
-          text: `Quality Compliance Score: ________ %`, 
-          spacing: { before: 200 }, 
-          alignment: AlignmentType.RIGHT 
+        new Paragraph({ spacing: { after: 120 } }),
+
+        // Main Items Grid
+        new Table({
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          rows: itemRows
         }),
+
+        new Paragraph({ spacing: { after: 120 } }),
+
+        // Comments & Tools
+        new Table({
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          rows: [
+            new TableRow({
+              children: [
+                new TableCell({
+                  width: { size: 33.3, type: WidthType.PERCENTAGE },
+                  borders: { top: standardBorder, bottom: standardBorder, left: standardBorder, right: standardBorder },
+                  children: [
+                    new Paragraph({ children: [new TextRun({ text: "COMMENTS", bold: true, size: 14, color: theme.primary })], border: { bottom: standardBorder } }),
+                    new Paragraph({ children: [new TextRun({ text: data.comments, italic: true, size: 12, color: "64748B" })], spacing: { before: 100 } })
+                  ],
+                  margins: { top: 100, bottom: 100, left: 100, right: 100 }
+                }),
+                new TableCell({
+                  width: { size: 33.3, type: WidthType.PERCENTAGE },
+                  borders: { top: standardBorder, bottom: standardBorder, left: standardBorder, right: standardBorder },
+                  children: [
+                    new Paragraph({ children: [new TextRun({ text: "MISSING TOOLS", bold: true, size: 14, color: theme.primary })], border: { bottom: standardBorder } }),
+                    new Paragraph({ children: [new TextRun({ text: "1. ............................................", size: 11, color: "CBD5E1" })], spacing: { before: 40 } }),
+                    new Paragraph({ children: [new TextRun({ text: "2. ............................................", size: 11, color: "CBD5E1" })] }),
+                    new Paragraph({ children: [new TextRun({ text: "3. ............................................", size: 11, color: "CBD5E1" })] }),
+                  ],
+                  margins: { top: 100, bottom: 100, left: 100, right: 100 }
+                }),
+                new TableCell({
+                  width: { size: 33.3, type: WidthType.PERCENTAGE },
+                  borders: { top: standardBorder, bottom: standardBorder, left: standardBorder, right: standardBorder },
+                  shading: { fill: "f8fafc" },
+                  verticalAlign: VerticalAlign.BOTTOM,
+                  children: [
+                    new Paragraph({ children: [new TextRun({ text: "AVAIL: ☐    N/A: ☐", bold: true, size: 12 })], spacing: { after: 200 } }),
+                    new Paragraph({ border: { bottom: { style: BorderStyle.DASHED, size: 1, color: "94A3B8" } } }),
+                    new Paragraph({ children: [new TextRun({ text: "Supervisor Signature", size: 10, color: "94A3B8" })] }),
+                  ],
+                  margins: { top: 100, bottom: 100, left: 100, right: 100 }
+                })
+              ]
+            })
+          ]
+        }),
+
+        new Paragraph({ spacing: { after: 120 } }),
+
+        // Summary Table (Arabic Support)
+        new Table({
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          rows: [...Array(Math.ceil(data.items.length / 3))].map((_, rowIndex) => {
+            const startIdx = rowIndex * 3;
+            const items = [data.items[startIdx], data.items[startIdx + 1], data.items[startIdx + 2]];
+            
+            return new TableRow({
+              children: items.flatMap((item, idx) => [
+                new TableCell({
+                  width: { size: 5, type: WidthType.PERCENTAGE },
+                  borders: { right: lightBorder },
+                  children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: item ? (startIdx + idx + 1).toString() : "", size: 10, color: "94A3B8" })] })]
+                }),
+                new TableCell({
+                  width: { size: 23, type: WidthType.PERCENTAGE },
+                  borders: { right: standardBorder },
+                  children: [
+                    new Paragraph({ 
+                      alignment: AlignmentType.RIGHT, 
+                      bidirectional: true,
+                      children: [new TextRun({ text: item?.titleArabic || "", bold: true, size: 11, font: "Arial Unicode MS" })] 
+                    })
+                  ]
+                }),
+                new TableCell({
+                  width: { size: 5, type: WidthType.PERCENTAGE },
+                  shading: { fill: "f8fafc" },
+                  borders: { right: idx < 2 ? standardBorder : { style: BorderStyle.NONE } },
+                  children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: item ? `${item.givenScore}/${item.maxScore}` : "", size: 11, bold: true })] })]
+                })
+              ])
+            });
+          })
+        }),
+
+        new Paragraph({ spacing: { after: 240 } }),
+
+        // Signatures Bar
+        new Table({
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          borders: { top: standardBorder, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } },
+          rows: [
+            new TableRow({
+              children: [
+                new TableCell({
+                  width: { size: 30, type: WidthType.PERCENTAGE },
+                  children: [
+                    new Paragraph({ spacing: { before: 200 }, border: { bottom: standardBorder } }),
+                    new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "AUDITOR SIGNATURE", bold: true, size: 12, color: theme.primary })] })
+                  ]
+                }),
+                new TableCell({
+                  width: { size: 40, type: WidthType.PERCENTAGE },
+                  verticalAlign: VerticalAlign.CENTER,
+                  children: [
+                    new Paragraph({ 
+                      alignment: AlignmentType.CENTER, 
+                      children: [new TextRun({ text: "Quality Compliance Score: ________ %", bold: true, size: 18, italic: true, color: theme.primary })] 
+                    })
+                  ]
+                }),
+                new TableCell({
+                  width: { size: 30, type: WidthType.PERCENTAGE },
+                  children: [
+                    new Paragraph({ spacing: { before: 200 }, border: { bottom: standardBorder } }),
+                    new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "OFFICIAL APPROVAL", bold: true, size: 12, color: theme.primary })] })
+                  ]
+                })
+              ]
+            })
+          ]
+        })
       ]
     }]
   });
@@ -227,7 +332,6 @@ export async function generateDocx(data: InspectionData, variant: StyleVariant) 
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `Audit_Report_${variant}_${data.id}.docx`;
+  a.download = `Audit_Report_${data.areaType.replace(/\s+/g, '_')}_${data.id}.docx`;
   a.click();
-  window.URL.revokeObjectURL(url);
 }
